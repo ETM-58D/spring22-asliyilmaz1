@@ -1,0 +1,54 @@
+## ASLI YILMAZ_HW2
+## In this homework, three series are analysed using the data from EVDS, those are food, clothing and shoes, real rent price indexes, and compared with the search results for "working visa" according to Google Trends.
+
+
+
+install.packages('openxlsx')
+install.packages('ggplot2')
+install.packages('data.table')
+install.packages('skimr')
+install.packages('GGally')
+install.packages('ggcorrplot')
+
+
+require(openxlsx)
+require(ggplot2)
+require(data.table)
+require(skimr)
+require(GGally)
+require(ggcorrplot)
+
+
+library(openxlsx)
+
+
+##Analyzing EVDS
+
+priceindex=read.xlsx("EVDS.xlsx")
+str(priceindex)
+summary_data=skim(priceindex)
+
+ggplot(priceindex, aes(x=food)) + geom_histogram()
+ggplot(priceindex, aes(x=clothing.and.shoes)) + geom_histogram()
+ggplot(priceindex, aes(x=real.rent.price)) + geom_histogram()
+ggpairs(priceindex, 2:4)
+
+##Analyzing search results for "calisma vizesi" from Google Trends
+
+read.xlsx(multiTimeline.xlsx)
+working_visa=read.xlsx("multiTimeline.xlsx")
+str(working_visa)
+summary_data=skim(working_visa)
+print(summary_data)
+working_visa=data.table(working_visa)
+working_visa
+ggplot(working_visa, aes(x=working_visa)) + geom_histogram()
+
+##In this phase, EVDS and Google Trends data are merged to see the actual correlation in between.
+merged_data=read.xlsx("merged_data.xlsx")
+merged_data
+ggpairs(merged_data, 2:5)
+cor(merged_data$food, merged_data$clothing.and.shoes, merged_data$real.rent.price, merged_data$calisma_vizesi)
+## cor function caused error multiple time, could not be solved
+
+##As a result, it is seen that food, clothing and shoes, and real rent price indices are almost perfectly correlated with each other based on the changes in the last 2 years. In addition, the correlation coefficients of the change in price indices with the "work visa" search results were also high.

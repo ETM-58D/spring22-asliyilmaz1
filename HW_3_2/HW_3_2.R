@@ -1,0 +1,16 @@
+##Reading the data
+library(openxlsx)
+dist=read.xlsx("mesafe.xlsx")
+
+##Replacing "0" values with NA
+dist[is.na(dist)] <- 0
+head(dist)
+
+##Applying MDS
+dist <- cmdscale(dist, k = 2, eig = TRUE)
+x_t1 <- dist$points[, 1]
+y_t1 <- dist$points[, 2]
+
+##visualizing
+plot(x_t1, y_t1, pch = 19, xlab = "", ylab = "", axes = F, main = "Cities of Turkey")
+text(x_t1, y_t1, pos = 4, cex = 0.6, labels = colnames(dist))

@@ -38,4 +38,4 @@ silh[k-1]=mean(user_data1_sil[,3])
 }
 data.frame(k=2:6,silh)
 
-##As a result, it is observed that further analysis is required, because the highest silhuette index is obtained as 0.3.. which is not sufficient.
+##As a result, it is observed that further analysis is required, because the highest silhuette index is obtained as 0.3.. which is not sufficient (expected to be 0.7..). Additionally according to latest analysis 1 cluster dominates the others.

@@ -1,0 +1,84 @@
+
+library(openxl)
+library(readxl)
+library(readxls)
+library(caret)
+library(rpart.plot)
+library(rpart)
+library(data.table)
+library(rattle)
+library(randomForest)
+
+data=read_xls("Absenteeism_at_work.xls")
+str(data)
+data=data.table(data)
+
+##Here the aim is obtaining the best model for classifying the absence of work. Hours of absence is classified using median of the data column.
+
+classification_data=copy(data)
+classification_data[,is_absent:=as.factor(paste0('ext',as.numeric(abs_hours>quantile(abs_hours,0.5))))]
+classification_data[,abs_hours:=NULL]
+head(classification_data,10)
+
+set.seed(1000)
+split=sample.split(data$abs_hours,SplitRatio=0.6)
+tree_tr=subset(data,split==TRUE)
+tree_te=subset(data,split==FALSE)
+
+
+##Setting the model using Rpart function.
+tree=rpart(is_absent~ ., data = classification_data)
+tree
+fancyRpartPlot(fit_tree)
+fancyRpartPlot(tree)
+fit_tree=rpart(is_absent ~ ., data = classification_data,
+control=rpart.control(cp=0))
+tree=rpart(is_absent ~ ., data = classification_data,
+control=rpart.control(cp=0))
+tree
+fancyRpartPlot(tree)
+
+##10-fold Cross Validation
+require(caret)
+n_repeats=10
+n_folds=10
+fitControl=trainControl(method = "repeatedcv",
+number = n_folds,
+repeats = n_repeats,
+summaryFunction=twoClassSummary,
+classProbs=TRUE)
+fitControl
+tree_fit=train(is_absent ~ ., data=data.frame(classification_data),
+method = "rpart",
+trControl = fitControl,
+tuneLength = 5)
+tree_fit
+
+tree_fitpred=predict(tree_fit)
+
+confusionMatrix(tree_fitpred,data,positive=ext1)
+fit_tree=rpart(is_absent ~ ., data = classification_data,
+control=rpart.control(maxdepth=3,minsplit=50,minbucket=25))
+fit_tree
+summary(fit_tree)
+
+##Pruning the tree
+opt_index=which.min(fit_tree$cptable[,"xerror"])
+cp_opt=fit_tree$cptable[opt_index,"CP"]
+cp_opt
+fit_tree_opt=prune.rpart(tree=fit_tree, cp=cp_opt)
+rpart.plot(x=fit_tree_opt, yesno=2, type=2, extra=101)
+
+##Random Forest
+require(randomForest)
+target=as.factor(classification_data$is_absent)
+x=classification_data[,-c('is_absent'),with=F]
+fitrf=randomForest(x,target,ntree=2000)
+fitrf
+dim(x)
+plot(fitrf)
+rf_grid=expand.grid(mtry = c(4, 6, 8),
+splitrule = c("gini", "extratrees"),
+min.node.size = c(5))
+rf_grid
+
